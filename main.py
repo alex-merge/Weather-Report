@@ -4,6 +4,7 @@ import subprocess
 import meteofrance_api
 import time
 import os
+import datetime
 
 CHATID = os.getenv('CHATID')
 BOTID = os.getenv('BOTID')
@@ -45,4 +46,8 @@ while True:
 			CHATID,
 			BOTID])
     
-    time.sleep(86399)
+    t_hour, t_min = datetime.datetime.now().hour, datetime.datetime.now().min
+    n_min, n_hour = 60-t_min, 23-t_hour+8
+    n_sec = n_min*60+n_hour*60*60
+
+    time.sleep(n_sec)
