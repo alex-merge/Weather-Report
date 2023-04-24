@@ -45,4 +45,4 @@ while True:
 			CHATID,
 			BOTID])
     
-    time.sleep(21600)
+    time.sleep(86399)
