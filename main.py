@@ -47,7 +47,7 @@ while True:
 			BOTID])
     
     t_hour, t_min = datetime.datetime.now().hour, datetime.datetime.now().min
-    n_min, n_hour = 60-t_min, 23-t_hour+8
+    n_min, n_hour = 60-int(t_min), 23-int(t_hour)+8
     n_sec = n_min*60+n_hour*60*60
 
     time.sleep(n_sec)
