@@ -16,3 +16,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag ghcr.io/alex-merge/weather-report:latest
+    - name: Push the Docker container
+      run: docker image push ghcr.io/alex-merge/weather-report:latest
