@@ -20,10 +20,14 @@ BOTID = os.getenv('BOTID')
 
 Forecast = meteofrance_api.MeteoFranceClient()
 phenomenons_names = {
-    1 : "Vent",
-    2 : "Pluie/inondation",
-    3 : "Orage",
+    1 : "Wind",
+    2 : "Rain/Flood",
+    3 : "Storm",
     }
+
+# Timezone 
+timezone = 2
+
 
 while True:
     alerts = Forecast.get_warning_current_phenomenoms("31").phenomenons_max_colors
@@ -33,7 +37,7 @@ while True:
             if (elem["phenomenon_id"] in [1, 2, 3]) and \
                 (elem["phenomenons_max_color_id"] > 1):
                 subprocess.run(["./telegram_msg",
-                                f"Nouvelle alerte : {phenomenons_names[elem['phenomenon_id']]}",
+                                f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
 				CHATID,
 				BOTID])
                 alert_sent += 1
@@ -42,7 +46,7 @@ while True:
         
     if alert_sent == 0:
         subprocess.run(["./telegram_bot",
-                        f"Pas d'alerte meteo pour le moment",
+                        f"No weather alerts at the moment",
 			CHATID,
 			BOTID])
     
