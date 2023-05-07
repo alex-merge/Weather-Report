@@ -34,12 +34,12 @@ while True:
     alert_sent = 0
     try :
         for elem in alerts:
-            if (elem["phenomenon_id"] in [1, 2, 3]) and \
-                (elem["phenomenons_max_color_id"] > 1):
-                subprocess.run(["./telegram_msg",
+            if (elem["phenomenon_id"] in [1, 2, 3]) and (elem["phenomenons_max_color_id"] > 1):
+                subprocess.run(["./telegram_bot",
                                 f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
-				CHATID,
-				BOTID])
+				                           CHATID,
+				                           BOTID])
+                print("Alert(s) found(s)")
                 alert_sent += 1
     except : 
         0 == 0
