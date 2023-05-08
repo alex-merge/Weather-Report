@@ -6,8 +6,10 @@ import time
 import os
 import datetime
 
+# Environment variables
 CHATID = os.getenv('CHATID')
 BOTID = os.getenv('BOTID')
+FRDPT = str(os.getenv('FRDPT'))
 
 # 1 : Vent
 # 2 : pluie/inondation
@@ -30,16 +32,17 @@ timezone = 2
 
 
 while True:
-    alerts = Forecast.get_warning_current_phenomenoms("31").phenomenons_max_colors
+    alerts = Forecast.get_warning_current_phenomenoms(FRDPT).phenomenons_max_colors
     alert_sent = 0
     try :
         for elem in alerts:
+            print(f"Alert found: {elem["phenomenon_id"]}")
             if (elem["phenomenon_id"] in [1, 2, 3]) and (elem["phenomenons_max_color_id"] > 1):
                 subprocess.run(["./telegram_bot",
                                 f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
 				                           CHATID,
 				                           BOTID])
-                print("Alert(s) found(s)")
+                
                 alert_sent += 1
     except : 
         0 == 0
