@@ -38,7 +38,7 @@ while True:
     for elem in alerts:
         print(f"Alert found: {elem['phenomenon_id']}")
         subprocess.run(["echo", f"Alert found: {elem['phenomenon_id']}"])
-        if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenons_max_color_id"] > 1):
+        if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenon_max_color_id"] > 1):
             subprocess.run(["./telegram_bot", 
                          f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
                          CHATID,
