@@ -30,23 +30,21 @@ phenomenons_names = {
 # Timezone 
 timezone = 2
 
+subprocess.run(["echo", "Started Weather-Report Version 1.1"])
 
 while True:
     alerts = Forecast.get_warning_current_phenomenoms(FRDPT).phenomenons_max_colors
     alert_sent = 0
-    try :
-        for elem in alerts:
-            print(f"Alert found: {elem['phenomenon_id']}")
-            if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenons_max_color_id"] > 1):
-                subprocess.run(["./telegram_bot",
-                                f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
-				                           CHATID,
-				                           BOTID])
-                
-                alert_sent += 1
-    except : 
-        0 == 0
-        
+    for elem in alerts:
+        print(f"Alert found: {elem['phenomenon_id']}")
+	subprocess.run(["echo", f"Alert found: {elem['phenomenon_id']}"])
+        if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenons_max_color_id"] > 1):
+	    subprocess.run(["./telegram_bot",
+			    f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
+							     CHATID,
+				                             BOTID])    
+	    alert_sent += 1
+	
     if alert_sent == 0:
         subprocess.run(["./telegram_bot",
                         f"No weather alerts at the moment",
