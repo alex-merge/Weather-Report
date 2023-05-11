@@ -24,7 +24,7 @@ Forecast = meteofrance_api.MeteoFranceClient()
 phenomenons_names = {
     1 : "Wind",
     2 : "Rain/Flood",
-    3 : "Storm",
+    8 : "Storm",
     }
 
 # Timezone 
@@ -37,7 +37,7 @@ while True:
     try :
         for elem in alerts:
             print(f"Alert found: {elem['phenomenon_id']}")
-            if (elem["phenomenon_id"] in [1, 2, 3]) and (elem["phenomenons_max_color_id"] > 1):
+            if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenons_max_color_id"] > 1):
                 subprocess.run(["./telegram_bot",
                                 f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
 				                           CHATID,
