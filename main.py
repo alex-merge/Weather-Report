@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import subprocess
+"""
+Bot sending weather forecast sum ups each day and on request using telegram
+
+@author: Alexis M.
+@version: 2.0
+"""
+
 import meteofrance_api
+from simple_telegram import telegram
 import time
 import os
 import datetime
@@ -9,50 +16,96 @@ import datetime
 # Environment variables
 CHATID = os.getenv('CHATID')
 BOTID = os.getenv('BOTID')
-FRDPT = str(os.getenv('FRDPT'))
+CITY = str(os.getenv('CITY'))
+REPORT_HOUR = os.getenv('RHOUR')
 
-# 1 : Vent
-# 2 : pluie/inondation
-# 3 : 
-# 4 : crues
-# 5 :
-# 6 :
-# 7 :
-# 8 : orage
+# Initializing telegram bot communication handler
+tg_bot = telegram.telegram(token = BOTID)
 
-Forecast = meteofrance_api.MeteoFranceClient()
+# Initializing meteofrance object
+client = meteofrance_api.MeteoFranceClient()
+city = client.search_places(CITY)[0]
+
 phenomenons_names = {
     1 : "Wind",
     2 : "Rain/Flood",
     8 : "Storm",
     }
 
-# Timezone 
-timezone = 2
+weather_icons = {
+    "Très nuageux": "☁",
+    "Rares averses": "🌧",
+    "Ensoleillé": "☀",
+    "Risque d'orages": "🌩" 
+    }
 
-subprocess.run(["echo", "Started Weather-Report Version 1.1"])
-
-while True:
-    alerts = Forecast.get_warning_current_phenomenoms(FRDPT).phenomenons_max_colors
-    alert_sent = 0
-    for elem in alerts:
-        print(f"Alert found: {elem['phenomenon_id']}")
-        subprocess.run(["echo", f"Alert found: {elem['phenomenon_id']}"])
-        if (elem["phenomenon_id"] in [1, 2, 8]) and (elem["phenomenon_max_color_id"] > 1):
-            subprocess.run(["./telegram_bot", 
-                         f"New alert : {phenomenons_names[elem['phenomenon_id']]}",
-                         CHATID,
-                         BOTID])    
-        alert_sent += 1
-	
-    if alert_sent == 0:
-        subprocess.run(["./telegram_bot",
-                        f"No weather alerts at the moment",
-			CHATID,
-			BOTID])
+# Function to create the bot message
+def create_report():
+    # The aim is to get the min/max temperature for the morning and afternoon
+    # Also, show the weather for each hour in the day (8-20)
     
-    t_hour, t_min = datetime.datetime.now().strftime("%H"), datetime.datetime.now().strftime("%M")
-    n_min, n_hour = 60-int(t_min), 23-int(t_hour)-timezone+8
-    n_sec = n_min*60+n_hour*60*60
+    forecast_instance = client.get_forecast_for_place(city)
+    hourly_forecasts = [f for f in forecast_instance.forecast
+                        if 8 <= forecast_instance.timestamp_to_locale_time(f['dt']).hour <= 20
+                        and forecast_instance.timestamp_to_locale_time(f['dt']).day == datetime.date.today().day]
+    times = [forecast_instance.timestamp_to_locale_time(f['dt']) for f in hourly_forecasts]
+    
+    # Weather temperature combo part
+    sumup = "Weather:\n"
+    
+    for f in hourly_forecasts:
+        _hour = forecast_instance.timestamp_to_locale_time(f['dt']).hour
+        _tmp = f" {_hour : 03d}h - {weather_icons[f['weather']['desc']]} {f['weather']['desc']}\t\t{f['T']['windchill']}°C\n"
+        sumup += _tmp
+    
+    sumup += "\n"
+    
+    # Today's weather alerts
+    sumup += "Today's alerts:\n"
+    alerts = client.get_warning_current_phenomenoms(city.admin2).phenomenons_max_colors
+    
+    for elem in alerts:
+        if elem["phenomenon_id"] in list(phenomenons_names.keys()) and (elem["phenomenon_max_color_id"] > 1):
+            _tmp = f" {phenomenons_names[elem['phenomenon_id']]}\n"
+            sumup += _tmp
+        
+    return sumup
 
-    time.sleep(n_sec)
+tg_bot.getUpdates()
+last_update_id = tg_bot.last_update["result"][-1]["update_id"]
+
+# main loop
+while True:
+    current_date = datetime.datetime.now()
+    current_hour = current_date.hour + round(current_date.minute/60, 1)
+    
+    # Daily report
+    if abs(current_hour-REPORT_HOUR) <= 0.085 :
+        print("Sending daily report !")
+        msg = create_report()
+        
+        tg_bot.sendMessage(msg, CHATID)
+        
+        time.sleep(300)
+    
+    # Getting updates
+    tg_bot.getUpdates()
+    updates_from_chatid = [msg for msg in tg_bot.last_update["result"] 
+                           if msg["message"]["chat"]["id"] == CHATID
+                           and msg["update_id"] > last_update_id]
+    
+    if len(updates_from_chatid) >= 1 :
+        print("New msg !")
+        print(f"Old updateID : {last_update_id}", end="\t")
+        last_update_id = updates_from_chatid[-1]["update_id"]
+        print(f"New updateID : {last_update_id}")
+        last_msg = updates_from_chatid[-1]["message"]["text"]
+        
+        if last_msg == "/report":
+            print("Sending report as requested")
+            msg = create_report()
+            
+            tg_bot.sendMessage(msg, CHATID)
+        
+    time.sleep(30)
+    
