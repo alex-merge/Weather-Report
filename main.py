@@ -14,8 +14,8 @@ import os
 import datetime
 
 # Environment variables
-CHATID = os.getenv('CHATID')
-BOTID = os.getenv('BOTID')
+CHATID = int(os.getenv('CHATID'))
+BOTID = str(os.getenv('BOTID'))
 CITY = str(os.getenv('CITY'))
 REPORT_HOUR = int(os.getenv('RHOUR'))
 
