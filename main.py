@@ -17,10 +17,11 @@ import datetime
 CHATID = os.getenv('CHATID')
 BOTID = os.getenv('BOTID')
 CITY = str(os.getenv('CITY'))
-REPORT_HOUR = os.getenv('RHOUR')
+REPORT_HOUR = int(os.getenv('RHOUR'))
 
 # Initializing telegram bot communication handler
 tg_bot = telegram.telegram(token = BOTID)
+tg_bot.sendMessage("Weather Report v2.0 started", CHATID)
 
 # Initializing meteofrance object
 client = meteofrance_api.MeteoFranceClient()
