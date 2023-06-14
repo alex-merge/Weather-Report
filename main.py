@@ -37,7 +37,8 @@ weather_icons = {
     "Très nuageux": "☁",
     "Rares averses": "🌧",
     "Ensoleillé": "☀",
-    "Risque d'orages": "🌩" 
+    "Risque d'orages": "🌩",
+    "Eclaircies": "⛅",
     }
 
 # Function to create the bot message
@@ -56,7 +57,10 @@ def create_report():
     
     for f in hourly_forecasts:
         _hour = forecast_instance.timestamp_to_locale_time(f['dt']).hour
-        _tmp = f" {_hour : 03d}h - {weather_icons[f['weather']['desc']]} {f['weather']['desc']}\t\t{f['T']['windchill']}°C\n"
+        try :
+            _tmp = f" {_hour : 03d}h - {weather_icons[f['weather']['desc']]} {f['weather']['desc']}\t\t{f['T']['windchill']}°C\n"
+        except :
+            _tmp = f" {_hour : 03d}h - {f['weather']['desc']}\t\t{f['T']['windchill']}°C\n"
         sumup += _tmp
     
     sumup += "\n"
