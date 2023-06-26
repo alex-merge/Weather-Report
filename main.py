@@ -18,14 +18,17 @@ CHATID = int(os.getenv('CHATID'))
 BOTID = str(os.getenv('BOTID'))
 CITY = str(os.getenv('CITY'))
 REPORT_HOUR = int(os.getenv('RHOUR'))
+DEBUG = bool(int(os.getenv('DEBUG')))
 
 # Initializing telegram bot communication handler
 tg_bot = telegram.telegram(token = BOTID)
-tg_bot.sendMessage("Weather Report v2.0 started", CHATID)
+tg_bot.sendMessage("Weather Report v2.1 started", CHATID)
 
 # Initializing meteofrance object
 client = meteofrance_api.MeteoFranceClient()
 city = client.search_places(CITY)[0]
+
+if DEBUG: tg_bot.sendMessage("Started API client", CHATID)
 
 phenomenons_names = {
     1 : "Wind",
@@ -73,7 +76,7 @@ def create_report():
         if elem["phenomenon_id"] in list(phenomenons_names.keys()) and (elem["phenomenon_max_color_id"] > 1):
             _tmp = f" {phenomenons_names[elem['phenomenon_id']]}\n"
             sumup += _tmp
-        
+    
     return sumup
 
 tg_bot.getUpdates()
@@ -87,19 +90,30 @@ while True:
     # Daily report
     if abs(current_hour-REPORT_HOUR) <= 0.085 :
         print("Sending daily report !")
-        msg = create_report()
+        try :
+            msg = create_report()
+            if DEBUG: tg_bot.sendMessage("Report created successfully", CHATID)
+        except :
+            if DEBUG: tg_bot.sendMessage("Error, unable to create report", CHATID)
         
-        tg_bot.sendMessage(msg, CHATID)
+        try :
+            tg_bot.sendMessage(msg, CHATID)
+        except :
+            if DEBUG: tg_bot.sendMessage("Error, unable to send message", CHATID)
         
         time.sleep(300)
     
     # Getting updates
-    tg_bot.getUpdates()
-    updates_from_chatid = [msg for msg in tg_bot.last_update["result"] 
-                           if msg["message"]["chat"]["id"] == CHATID
-                           and msg["update_id"] > last_update_id]
+    try :
+        tg_bot.getUpdates()
+        updates_from_chatid = [msg for msg in tg_bot.last_update["result"] 
+                               if msg["message"]["chat"]["id"] == CHATID
+                               and msg["update_id"] > last_update_id]
+    except :
+        if DEBUG: tg_bot.sendMessage("Error, unable to get updates", CHATID)
     
     if len(updates_from_chatid) >= 1 :
+        if DEBUG: tg_bot.sendMessage("New update message", CHATID)
         print("New msg !")
         print(f"Old updateID : {last_update_id}", end="\t")
         last_update_id = updates_from_chatid[-1]["update_id"]
@@ -108,9 +122,16 @@ while True:
         
         if last_msg == "/report":
             print("Sending report as requested")
-            msg = create_report()
+            try :
+                msg = create_report()
+                if DEBUG: tg_bot.sendMessage("Report created successfully", CHATID)
+            except :
+                if DEBUG: tg_bot.sendMessage("Error, unable to create report", CHATID)
             
-            tg_bot.sendMessage(msg, CHATID)
+            try :
+                tg_bot.sendMessage(msg, CHATID)
+            except :
+                if DEBUG: tg_bot.sendMessage("Error, unable to send message", CHATID)
         
     time.sleep(30)
     
